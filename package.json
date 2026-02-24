@@ -1,0 +1,63 @@
+{
+  "name": "n8n-nodes-flare-network",
+  "version": "1.0.0",
+  "description": "n8n community node for Flare Network",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "main": "dist/nodes/Flare Network/Flare Network.node.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@9.1.4",
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "n8n-community-node-package",
+    "flare-network",
+    "ftso",
+    "delegation",
+    "state-connector",
+    "fassets",
+    "blockchain"
+  ],
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "format": "prettier nodes credentials --write",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "gulp": "^4.0.2",
+    "jest": "^29.7.0",
+    "n8n-workflow": "*",
+    "prettier": "^3.3.2",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.5.3",
+    "eslint-plugin-n8n-nodes-base": "^1.16.1"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "n8n": {
+    "credentials": [
+      "dist/credentials/FlareNetworkApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/FlareNetwork/FlareNetwork.node.js"
+    ]
+  }
+}
