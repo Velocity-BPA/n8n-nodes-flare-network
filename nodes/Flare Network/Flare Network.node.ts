@@ -49,6 +49,10 @@ export class FlareNetwork implements INodeType {
         noDataExpression: true,
         options: [
           {
+            name: 'FtsoDataFeed',
+            value: 'ftsoDataFeed',
+          },
+          {
             name: 'FtsoPriceFeeds',
             value: 'ftsoPriceFeeds',
           },
@@ -69,9 +73,65 @@ export class FlareNetwork implements INodeType {
             value: 'networkInfo',
           }
         ],
-        default: 'ftsoPriceFeeds',
+        default: 'ftsoDataFeed',
       },
       // Operation dropdowns per resource
+{
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+		},
+	},
+	options: [
+		{
+			name: 'Get Current Prices',
+			value: 'getCurrentPrices',
+			description: 'Get current price feeds for all symbols',
+			action: 'Get current prices',
+		},
+		{
+			name: 'Get Historical Prices',
+			value: 'getHistoricalPrices',
+			description: 'Get historical price data',
+			action: 'Get historical prices',
+		},
+		{
+			name: 'Get Price by Symbol',
+			value: 'getPriceBySymbol',
+			description: 'Get current price for specific symbol',
+			action: 'Get price by symbol',
+		},
+		{
+			name: 'Get Data Providers',
+			value: 'getDataProviders',
+			description: 'Get list of FTSO data providers',
+			action: 'Get data providers',
+		},
+		{
+			name: 'Get Data Provider',
+			value: 'getDataProvider',
+			description: 'Get specific data provider details',
+			action: 'Get data provider',
+		},
+		{
+			name: 'Get Current Epoch',
+			value: 'getCurrentEpoch',
+			description: 'Get current FTSO epoch information',
+			action: 'Get current epoch',
+		},
+		{
+			name: 'Get Epoch Data',
+			value: 'getEpochData',
+			description: 'Get data for specific epoch',
+			action: 'Get epoch data',
+		},
+	],
+	default: 'getCurrentPrices',
+},
 {
   displayName: 'Operation',
   name: 'operation',
@@ -123,16 +183,58 @@ export class FlareNetwork implements INodeType {
   default: 'getCurrentPrices',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-    },
-  },
-  options: [
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+		},
+	},
+	options: [
+		{
+			name: 'Create Delegation',
+			value: 'createDelegation',
+			description: 'Delegate vote power to data providers',
+			action: 'Create delegation',
+		},
+		{
+			name: 'Get Delegations',
+			value: 'getDelegations',
+			description: 'Get delegation details for address',
+			action: 'Get delegations',
+		},
+		{
+			name: 'Update Delegation',
+			value: 'updateDelegation',
+			description: 'Update existing delegations',
+			action: 'Update delegation',
+		},
+		{
+			name: 'Remove Delegation',
+			value: 'removeDelegation',
+			description: 'Remove delegations',
+			action: 'Remove delegation',
+		},
+		{
+			name: 'Get Delegation Rewards',
+			value: 'getDelegationRewards',
+			description: 'Get delegation rewards for address',
+			action: 'Get delegation rewards',
+		},
+		{
+			name: 'Get Vote Power',
+			value: 'getVotePower',
+			description: 'Get vote power distribution',
+			action: 'Get vote power',
+		},
+		{
+			name: 'Claim Rewards',
+			value: 'claimRewards',
+			description: 'Claim accumulated delegation rewards',
+			action: 'Claim rewards',
+		},
     {
       name: 'Get Delegator Info',
       value: 'getDelegatorInfo',
@@ -152,12 +254,6 @@ export class FlareNetwork implements INodeType {
       action: 'Get provider details',
     },
     {
-      name: 'Get Delegation Rewards',
-      value: 'getDelegationRewards',
-      description: 'Get claimable rewards for delegator',
-      action: 'Get delegation rewards',
-    },
-    {
       name: 'Get Delegation History',
       value: 'getDelegationHistory',
       description: 'Get delegation history',
@@ -169,26 +265,68 @@ export class FlareNetwork implements INodeType {
       description: 'Estimate potential rewards',
       action: 'Estimate rewards',
     },
-  ],
-  default: 'getDelegatorInfo',
+	],
+	default: 'createDelegation',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['stateConnector'],
-    },
-  },
-  options: [
-    {
-      name: 'Get Attestations',
-      value: 'getAttestations',
-      description: 'Get attestation requests',
-      action: 'Get attestations',
-    },
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+		},
+	},
+	options: [
+		{
+			name: 'Create Attestation',
+			value: 'createAttestation',
+			description: 'Submit new attestation request',
+			action: 'Create attestation',
+		},
+		{
+			name: 'Get Attestation',
+			value: 'getAttestation',
+			description: 'Get specific attestation details',
+			action: 'Get attestation',
+		},
+		{
+			name: 'Get Attestations',
+			value: 'getAttestations',
+			description: 'Get list of attestations',
+			action: 'Get attestations',
+		},
+		{
+			name: 'Get Attestation Proof',
+			value: 'getAttestationProof',
+			description: 'Get merkle proof for attestation',
+			action: 'Get attestation proof',
+		},
+		{
+			name: 'Verify Proof',
+			value: 'verifyProof',
+			description: 'Verify attestation proof',
+			action: 'Verify proof',
+		},
+		{
+			name: 'Get Current Round',
+			value: 'getCurrentRound',
+			description: 'Get current State Connector round',
+			action: 'Get current round',
+		},
+		{
+			name: 'Get Round Data',
+			value: 'getRoundData',
+			description: 'Get data for specific round',
+			action: 'Get round data',
+		},
+		{
+			name: 'Get Attestation Sources',
+			value: 'getAttestationSources',
+			description: 'Get list of supported attestation sources',
+			action: 'Get attestation sources',
+		},
     {
       name: 'Get Attestation by ID',
       value: 'getAttestationById',
@@ -219,26 +357,68 @@ export class FlareNetwork implements INodeType {
       description: 'Get supported attestation types',
       action: 'Get supported types',
     },
-  ],
-  default: 'getAttestations',
+	],
+	default: 'createAttestation',
 },
 {
-  displayName: 'Operation',
-  name: 'operation',
-  type: 'options',
-  noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['fAssets'],
-    },
-  },
-  options: [
-    {
-      name: 'Get F-Asset Agents',
-      value: 'getFAssetAgents',
-      description: 'Get available F-Asset agents',
-      action: 'Get F-Asset agents',
-    },
+	displayName: 'Operation',
+	name: 'operation',
+	type: 'options',
+	noDataExpression: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+		},
+	},
+	options: [
+		{
+			name: 'Mint FAsset',
+			value: 'mintFAsset',
+			description: 'Mint new FAssets by locking underlying assets',
+			action: 'Mint FAsset',
+		},
+		{
+			name: 'Redeem FAsset',
+			value: 'redeemFAsset',
+			description: 'Redeem FAssets for underlying assets',
+			action: 'Redeem FAsset',
+		},
+		{
+			name: 'Get FAsset Positions',
+			value: 'getFAssetPositions',
+			description: 'Get FAsset positions for address',
+			action: 'Get FAsset positions',
+		},
+		{
+			name: 'Get FAsset Agents',
+			value: 'getFAssetAgents',
+			description: 'Get list of FAsset agents',
+			action: 'Get FAsset agents',
+		},
+		{
+			name: 'Get FAsset Agent',
+			value: 'getFAssetAgent',
+			description: 'Get specific FAsset agent details',
+			action: 'Get FAsset agent',
+		},
+		{
+			name: 'Liquidate FAsset',
+			value: 'liquidateFAsset',
+			description: 'Liquidate undercollateralized FAsset position',
+			action: 'Liquidate FAsset',
+		},
+		{
+			name: 'Get Collateral Ratio',
+			value: 'getCollateralRatio',
+			description: 'Get agent collateral ratio',
+			action: 'Get collateral ratio',
+		},
+		{
+			name: 'Get Underlying Balance',
+			value: 'getUnderlyingBalance',
+			description: 'Get underlying asset balance',
+			action: 'Get underlying balance',
+		},
     {
       name: 'Get Agent Details',
       value: 'getAgentDetails',
@@ -281,20 +461,23 @@ export class FlareNetwork implements INodeType {
       description: 'Get liquidation events',
       action: 'Get liquidations',
     },
-  ],
-  default: 'getFAssetAgents',
+	],
+	default: 'mintFAsset',
 },
 {
   displayName: 'Operation',
   name: 'operation',
   type: 'options',
   noDataExpression: true,
-  displayOptions: {
-    show: {
-      resource: ['networkInfo'],
-    },
-  },
+  displayOptions: { show: { resource: ['networkInfo'] } },
   options: [
+    { name: 'Get Network Status', value: 'getNetworkStatus', description: 'Get current network status and health', action: 'Get network status' },
+    { name: 'Get Latest Block', value: 'getLatestBlock', description: 'Get latest block information', action: 'Get latest block' },
+    { name: 'Get Block', value: 'getBlock', description: 'Get specific block details', action: 'Get block' },
+    { name: 'Get Transaction', value: 'getTransaction', description: 'Get transaction details', action: 'Get transaction' },
+    { name: 'Get Account', value: 'getAccount', description: 'Get account information and balance', action: 'Get account' },
+    { name: 'Get Validators', value: 'getValidators', description: 'Get list of network validators', action: 'Get validators' },
+    { name: 'Get Validator', value: 'getValidator', description: 'Get specific validator details', action: 'Get validator' },
     {
       name: 'Get Network Info',
       value: 'getNetworkInfo',
@@ -338,9 +521,159 @@ export class FlareNetwork implements INodeType {
       action: 'Get address transactions',
     },
   ],
-  default: 'getNetworkInfo',
+  default: 'getNetworkStatus',
 },
       // Parameter definitions
+{
+	displayName: 'Symbols',
+	name: 'symbols',
+	type: 'string',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getCurrentPrices'],
+		},
+	},
+	default: '',
+	placeholder: 'FLR,SGB,ETH,BTC',
+	description: 'Comma-separated list of symbols to get prices for. Leave empty for all symbols.',
+},
+{
+	displayName: 'Epoch',
+	name: 'epoch',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getCurrentPrices'],
+		},
+	},
+	default: 0,
+	description: 'Specific epoch number to get prices for. Leave 0 for current epoch.',
+},
+{
+	displayName: 'Symbol',
+	name: 'symbol',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getHistoricalPrices', 'getPriceBySymbol'],
+		},
+	},
+	default: '',
+	placeholder: 'FLR',
+	description: 'The symbol to get price data for',
+},
+{
+	displayName: 'From Epoch',
+	name: 'fromEpoch',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getHistoricalPrices'],
+		},
+	},
+	default: 0,
+	description: 'Starting epoch for historical data',
+},
+{
+	displayName: 'To Epoch',
+	name: 'toEpoch',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getHistoricalPrices'],
+		},
+	},
+	default: 0,
+	description: 'Ending epoch for historical data',
+},
+{
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getHistoricalPrices'],
+		},
+	},
+	default: 100,
+	description: 'Maximum number of records to return',
+},
+{
+	displayName: 'Active Only',
+	name: 'active',
+	type: 'boolean',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getDataProviders'],
+		},
+	},
+	default: true,
+	description: 'Whether to return only active data providers',
+},
+{
+	displayName: 'Sort By',
+	name: 'sortBy',
+	type: 'options',
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getDataProviders'],
+		},
+	},
+	options: [
+		{
+			name: 'Name',
+			value: 'name',
+		},
+		{
+			name: 'Vote Power',
+			value: 'votePower',
+		},
+		{
+			name: 'Rewards',
+			value: 'rewards',
+		},
+	],
+	default: 'votePower',
+	description: 'Field to sort the data providers by',
+},
+{
+	displayName: 'Address',
+	name: 'address',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getDataProvider'],
+		},
+	},
+	default: '',
+	placeholder: '0x...',
+	description: 'The address of the data provider',
+},
+{
+	displayName: 'Epoch Number',
+	name: 'epochNumber',
+	type: 'number',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['ftsoDataFeed'],
+			operation: ['getEpochData'],
+		},
+	},
+	default: 0,
+	description: 'The epoch number to get data for',
+},
 {
   displayName: 'Symbols',
   name: 'symbols',
@@ -510,73 +843,116 @@ export class FlareNetwork implements INodeType {
   placeholder: '0x...',
 },
 {
-  displayName: 'Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-      operation: ['getDelegatorInfo'],
-    },
-  },
-  default: '',
-  description: 'The delegator address to get delegation info for',
+	displayName: 'Providers',
+	name: 'providers',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['createDelegation', 'updateDelegation', 'removeDelegation'],
+		},
+	},
+	default: '',
+	description: 'Comma-separated list of data provider addresses',
 },
 {
-  displayName: 'Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-      operation: ['getProviderDetails'],
-    },
-  },
-  default: '',
-  description: 'The provider address to get details for',
+	displayName: 'Percentages',
+	name: 'percentages',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['createDelegation', 'updateDelegation'],
+		},
+	},
+	default: '',
+	description: 'Comma-separated list of delegation percentages (must sum to 100)',
 },
 {
-  displayName: 'Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-      operation: ['getDelegationRewards'],
-    },
-  },
-  default: '',
-  description: 'The delegator address to get rewards for',
+	displayName: 'From Address',
+	name: 'fromAddress',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['createDelegation', 'updateDelegation', 'removeDelegation'],
+		},
+	},
+	default: '',
+	description: 'Address delegating the vote power',
 },
 {
-  displayName: 'Epoch',
-  name: 'epoch',
-  type: 'number',
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-      operation: ['getDelegationRewards'],
-    },
-  },
-  default: '',
-  description: 'The epoch to get rewards for (optional)',
+	displayName: 'Address',
+	name: 'address',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['getDelegations', 'getDelegationRewards', 'getVotePower', 'claimRewards', 'getDelegatorInfo', 'getProviderDetails', 'getDelegationHistory'],
+		},
+	},
+	default: '',
+	description: 'Address to query delegation information for',
 },
 {
-  displayName: 'Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['delegation'],
-      operation: ['getDelegationHistory'],
-    },
-  },
-  default: '',
-  description: 'The address to get delegation history for',
+	displayName: 'Epoch',
+	name: 'epoch',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['getDelegations', 'getVotePower', 'getDelegationRewards'],
+		},
+	},
+	default: '',
+	description: 'Specific epoch to query (optional)',
+},
+{
+	displayName: 'From Epoch',
+	name: 'fromEpoch',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['getDelegationRewards'],
+		},
+	},
+	default: '',
+	description: 'Starting epoch for rewards query',
+},
+{
+	displayName: 'To Epoch',
+	name: 'toEpoch',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['getDelegationRewards'],
+		},
+	},
+	default: '',
+	description: 'Ending epoch for rewards query',
+},
+{
+	displayName: 'Epochs',
+	name: 'epochs',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['delegation'],
+			operation: ['claimRewards'],
+		},
+	},
+	default: '',
+	description: 'Comma-separated list of epochs to claim rewards from',
 },
 {
   displayName: 'Start Epoch',
@@ -646,9 +1022,94 @@ export class FlareNetwork implements INodeType {
   description: 'Duration in epochs for reward estimation',
 },
 {
-  displayName: 'Round ID',
-  name: 'roundId',
+	displayName: 'Attestation Type',
+	name: 'attestationType',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['createAttestation', 'submitAttestation'],
+		},
+	},
+	default: '',
+	description: 'Type of attestation to create',
+},
+{
+	displayName: 'Source ID',
+	name: 'sourceId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['createAttestation', 'submitAttestation'],
+		},
+	},
+	default: '',
+	description: 'ID of the attestation source',
+},
+{
+	displayName: 'Request Body',
+	name: 'requestBody',
+	type: 'json',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['createAttestation'],
+		},
+	},
+	default: '{}',
+	description: 'Attestation request body as JSON',
+},
+{
+  displayName: 'Attestation Data',
+  name: 'attestationData',
+  type: 'json',
+  required: true,
+  displayOptions: {
+    show: {
+      resource: ['stateConnector'],
+      operation: ['submitAttestation'],
+    },
+  },
+  default: '{}',
+  description: 'The attestation data payload as JSON',
+},
+{
+	displayName: 'Attestation ID',
+	name: 'attestationId',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['getAttestation', 'getAttestationProof', 'getAttestationById'],
+		},
+	},
+	default: '',
+	description: 'ID of the attestation',
+},
+{
+	displayName: 'Source ID',
+	name: 'sourceId',
+	type: 'string',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['getAttestations'],
+		},
+	},
+	default: '',
+	description: 'Filter by source ID',
+},
+{
+  displayName: 'Attestation Type',
+  name: 'attestationType',
   type: 'string',
+  required: false,
   displayOptions: {
     show: {
       resource: ['stateConnector'],
@@ -656,7 +1117,7 @@ export class FlareNetwork implements INodeType {
     },
   },
   default: '',
-  description: 'Filter attestations by round ID',
+  description: 'Filter by attestation type',
 },
 {
   displayName: 'Status',
@@ -686,60 +1147,74 @@ export class FlareNetwork implements INodeType {
   description: 'Filter attestations by status',
 },
 {
-  displayName: 'Attestation ID',
-  name: 'attestationId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['stateConnector'],
-      operation: ['getAttestationById'],
-    },
-  },
-  default: '',
-  description: 'The unique identifier of the attestation',
+	displayName: 'Limit',
+	name: 'limit',
+	type: 'number',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['getAttestations'],
+		},
+	},
+	default: 50,
+	description: 'Maximum number of attestations to return',
 },
 {
-  displayName: 'Attestation Type',
-  name: 'attestationType',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['stateConnector'],
-      operation: ['submitAttestation'],
-    },
-  },
-  default: '',
-  description: 'The type of attestation to submit',
+	displayName: 'Proof',
+	name: 'proof',
+	type: 'json',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['verifyProof'],
+		},
+	},
+	default: '{}',
+	description: 'Merkle proof data as JSON',
 },
 {
-  displayName: 'Source ID',
-  name: 'sourceId',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['stateConnector'],
-      operation: ['submitAttestation'],
-    },
-  },
-  default: '',
-  description: 'The source identifier for the attestation',
+	displayName: 'Merkle Root',
+	name: 'merkleRoot',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['verifyProof'],
+		},
+	},
+	default: '',
+	description: 'Merkle root hash for verification',
 },
 {
-  displayName: 'Attestation Data',
-  name: 'attestationData',
-  type: 'json',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['stateConnector'],
-      operation: ['submitAttestation'],
-    },
-  },
-  default: '{}',
-  description: 'The attestation data payload as JSON',
+	displayName: 'Attestation Data',
+	name: 'attestationData',
+	type: 'json',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['verifyProof'],
+		},
+	},
+	default: '{}',
+	description: 'Attestation data to verify',
+},
+{
+	displayName: 'Round ID',
+	name: 'roundId',
+	type: 'number',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['getRoundData'],
+		},
+	},
+	default: 1,
+	description: 'ID of the State Connector round',
 },
 {
   displayName: 'Round ID',
@@ -753,6 +1228,103 @@ export class FlareNetwork implements INodeType {
   },
   default: '',
   description: 'Specific round ID to get information for (optional)',
+},
+{
+	displayName: 'Active Only',
+	name: 'active',
+	type: 'boolean',
+	required: false,
+	displayOptions: {
+		show: {
+			resource: ['stateConnector'],
+			operation: ['getAttestationSources'],
+		},
+	},
+	default: true,
+	description: 'Whether to return only active sources',
+},
+{
+	displayName: 'Asset Type',
+	name: 'assetType',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['mintFAsset', 'redeemFAsset', 'getFAssetPositions', 'getFAssetAgents', 'getUnderlyingBalance'],
+		},
+	},
+	default: '',
+	description: 'The type of FAsset (e.g., FBTC, FXRP)',
+},
+{
+	displayName: 'Amount',
+	name: 'amount',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['mintFAsset', 'redeemFAsset', 'liquidateFAsset', 'createMintingRequest', 'createRedemptionRequest'],
+		},
+	},
+	default: '',
+	description: 'Amount to mint, redeem, or liquidate',
+},
+{
+	displayName: 'Underlying Address',
+	name: 'underlyingAddress',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['mintFAsset', 'redeemFAsset', 'createMintingRequest', 'createRedemptionRequest'],
+		},
+	},
+	default: '',
+	description: 'Address on the underlying blockchain',
+},
+{
+	displayName: 'Address',
+	name: 'address',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['getFAssetPositions', 'getUnderlyingBalance', 'getAgentDetails'],
+		},
+	},
+	default: '',
+	description: 'Address to query positions or balance for',
+},
+{
+	displayName: 'Active',
+	name: 'active',
+	type: 'boolean',
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['getFAssetAgents'],
+		},
+	},
+	default: true,
+	description: 'Whether to filter for active agents only',
+},
+{
+	displayName: 'Agent Address',
+	name: 'agentAddress',
+	type: 'string',
+	required: true,
+	displayOptions: {
+		show: {
+			resource: ['fAssets'],
+			operation: ['getFAssetAgent', 'liquidateFAsset', 'getCollateralRatio'],
+		},
+	},
+	default: '',
+	description: 'Address of the FAsset agent',
 },
 {
   displayName: 'F-Asset Type',
@@ -781,20 +1353,6 @@ export class FlareNetwork implements INodeType {
   description: 'Filter by status',
 },
 {
-  displayName: 'Agent Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['fAssets'],
-      operation: ['getAgentDetails'],
-    },
-  },
-  default: '',
-  description: 'The agent address to get details for',
-},
-{
   displayName: 'Agent',
   name: 'agent',
   type: 'string',
@@ -819,20 +1377,6 @@ export class FlareNetwork implements INodeType {
   },
   default: '',
   description: 'Filter by user address',
-},
-{
-  displayName: 'Amount',
-  name: 'amount',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['fAssets'],
-      operation: ['createMintingRequest', 'createRedemptionRequest'],
-    },
-  },
-  default: '',
-  description: 'The amount for the request',
 },
 {
   displayName: 'F-Asset Type',
@@ -863,18 +1407,77 @@ export class FlareNetwork implements INodeType {
   description: 'The agent address for minting',
 },
 {
-  displayName: 'Underlying Address',
-  name: 'underlyingAddress',
-  type: 'string',
+  displayName: 'Block Number',
+  name: 'blockNumber',
+  type: 'number',
   required: true,
+  default: 0,
   displayOptions: {
     show: {
-      resource: ['fAssets'],
-      operation: ['createMintingRequest', 'createRedemptionRequest'],
-    },
+      resource: ['networkInfo'],
+      operation: ['getBlock']
+    }
   },
+  description: 'The block number to retrieve details for'
+},
+{
+  displayName: 'Transaction Hash',
+  name: 'txHash',
+  type: 'string',
+  required: true,
   default: '',
-  description: 'The underlying blockchain address',
+  displayOptions: {
+    show: {
+      resource: ['networkInfo'],
+      operation: ['getTransaction', 'getTransactionByHash']
+    }
+  },
+  description: 'The transaction hash to retrieve details for'
+},
+{
+  displayName: 'Address',
+  name: 'address',
+  type: 'string',
+  required: true,
+  default: '',
+  displayOptions: {
+    show: {
+      resource: ['networkInfo'],
+      operation: ['getAccount', 'getValidator', 'getAddressBalance', 'getAddressTransactions']
+    }
+  },
+  description: 'The address to retrieve information for'
+},
+{
+  displayName: 'Active Only',
+  name: 'active',
+  type: 'boolean',
+  default: true,
+  displayOptions: {
+    show: {
+      resource: ['networkInfo'],
+      operation: ['getValidators']
+    }
+  },
+  description: 'Whether to show only active validators'
+},
+{
+  displayName: 'Sort By',
+  name: 'sortBy',
+  type: 'options',
+  options: [
+    { name: 'Stake Amount', value: 'stake' },
+    { name: 'Name', value: 'name' },
+    { name: 'Performance', value: 'performance' }
+  ],
+  default: 'stake',
+  displayOptions: {
+    show: {
+      resource: ['networkInfo'],
+      operation: ['getValidators']
+    }
+  },
+  description: 'How to sort the validators list'
 },
 {
   displayName: 'Block Number',
@@ -933,34 +1536,6 @@ export class FlareNetwork implements INodeType {
   description: 'Filter transactions by address',
 },
 {
-  displayName: 'Address',
-  name: 'address',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['networkInfo'],
-      operation: ['getAddressBalance', 'getAddressTransactions'],
-    },
-  },
-  default: '',
-  description: 'The wallet address to query',
-},
-{
-  displayName: 'Transaction Hash',
-  name: 'txHash',
-  type: 'string',
-  required: true,
-  displayOptions: {
-    show: {
-      resource: ['networkInfo'],
-      operation: ['getTransactionByHash'],
-    },
-  },
-  default: '',
-  description: 'The transaction hash to query',
-},
-{
   displayName: 'Offset',
   name: 'offset',
   type: 'number',
@@ -982,6 +1557,8 @@ export class FlareNetwork implements INodeType {
     const resource = this.getNodeParameter('resource', 0) as string;
 
     switch (resource) {
+      case 'ftsoDataFeed':
+        return [await executeFtsoDataFeedOperations.call(this, items)];
       case 'ftsoPriceFeeds':
         return [await executeFtsoPriceFeedsOperations.call(this, items)];
       case 'delegation':
@@ -1001,6 +1578,179 @@ export class FlareNetwork implements INodeType {
 // ============================================================
 // Resource Handler Functions
 // ============================================================
+
+async function executeFtsoDataFeedOperations(
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
+): Promise<INodeExecutionData[]> {
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('flarenetworkApi') as any;
+
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
+
+			switch (operation) {
+				case 'getCurrentPrices': {
+					const symbols = this.getNodeParameter('symbols', i) as string;
+					const epoch = this.getNodeParameter('epoch', i) as number;
+					
+					const queryParams = new URLSearchParams();
+					if (symbols) queryParams.append('symbols', symbols);
+					if (epoch > 0) queryParams.append('epoch', epoch.toString());
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/prices/current${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getHistoricalPrices': {
+					const symbol = this.getNodeParameter('symbol', i) as string;
+					const fromEpoch = this.getNodeParameter('fromEpoch', i) as number;
+					const toEpoch = this.getNodeParameter('toEpoch', i) as number;
+					const limit = this.getNodeParameter('limit', i) as number;
+
+					const queryParams = new URLSearchParams();
+					queryParams.append('symbol', symbol);
+					if (fromEpoch > 0) queryParams.append('fromEpoch', fromEpoch.toString());
+					if (toEpoch > 0) queryParams.append('toEpoch', toEpoch.toString());
+					if (limit > 0) queryParams.append('limit', limit.toString());
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/prices/historical?${queryParams.toString()}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getPriceBySymbol': {
+					const symbol = this.getNodeParameter('symbol', i) as string;
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/prices/${symbol}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getDataProviders': {
+					const active = this.getNodeParameter('active', i) as boolean;
+					const sortBy = this.getNodeParameter('sortBy', i) as string;
+
+					const queryParams = new URLSearchParams();
+					if (active !== undefined) queryParams.append('active', active.toString());
+					if (sortBy) queryParams.append('sortBy', sortBy);
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/providers${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getDataProvider': {
+					const address = this.getNodeParameter('address', i) as string;
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/providers/${address}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getCurrentEpoch': {
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/epochs/current`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				case 'getEpochData': {
+					const epochNumber = this.getNodeParameter('epochNumber', i) as number;
+
+					const options: any = {
+						method: 'GET',
+						url: `${credentials.baseUrl}/ftso/epochs/${epochNumber}`,
+						headers: {
+							'Authorization': `Bearer ${credentials.apiKey}`,
+							'Content-Type': 'application/json',
+						},
+						json: true,
+					};
+
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
+
+				default:
+					throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+			}
+
+			returnData.push({
+				json: result,
+				pairedItem: { item: i },
+			});
+
+		} catch (error: any) {
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message },
+					pairedItem: { item: i },
+				});
+			} else {
+				throw error;
+			}
+		}
+	}
+
+	return returnData;
+}
 
 async function executeFtsoPriceFeedsOperations(
   this: IExecuteFunctions,
@@ -1186,722 +1936,92 @@ async function executeFtsoPriceFeedsOperations(
 }
 
 async function executeDelegationOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
+	this: IExecuteFunctions,
+	items: INodeExecutionData[],
 ): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('flarenetworkApi') as any;
+	const returnData: INodeExecutionData[] = [];
+	const operation = this.getNodeParameter('operation', 0) as string;
+	const credentials = await this.getCredentials('flarenetworkApi') as any;
 
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
+	for (let i = 0; i < items.length; i++) {
+		try {
+			let result: any;
 
-      switch (operation) {
-        case 'getDelegatorInfo': {
-          const address = this.getNodeParameter('address', i) as string;
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/delegation/delegators/${address}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+			switch (operation) {
+				case 'createDelegation': {
+					const providers = this.getNodeParameter('providers', i) as string;
+					const percentages = this.getNodeParameter('percentages', i) as string;
+					const fromAddress = this.getNodeParameter('fromAddress', i) as string;
 
-        case 'getDelegationProviders': {
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/delegation/providers`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const body = {
+						providers: providers.split(',').map((p: string) => p.trim()),
+						percentages: percentages.split(',').map((p: string) => parseInt(p.trim())),
+						fromAddress,
+					};
 
-        case 'getProviderDetails': {
-          const address = this.getNodeParameter('address', i) as string;
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/delegation/providers/${address}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'POST',
+						url: `${credentials.baseUrl}/delegation/delegate`,
+						headers: {
+							'Content-Type': 'application/json',
+							'X-API-Key': credentials.apiKey,
+						},
+						body,
+						json: true,
+					};
 
-        case 'getDelegationRewards': {
-          const address = this.getNodeParameter('address', i) as string;
-          const epoch = this.getNodeParameter('epoch', i) as number;
-          let url = `${credentials.baseUrl}/delegation/rewards/${address}`;
-          
-          if (epoch) {
-            url += `?epoch=${epoch}`;
-          }
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          const options: any = {
-            method: 'GET',
-            url: url,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+				case 'getDelegations': {
+					const address = this.getNodeParameter('address', i) as string;
+					const epoch = this.getNodeParameter('epoch', i) as number;
 
-        case 'getDelegationHistory': {
-          const address = this.getNodeParameter('address', i) as string;
-          const startEpoch = this.getNodeParameter('startEpoch', i) as number;
-          const endEpoch = this.getNodeParameter('endEpoch', i) as number;
-          
-          let url = `${credentials.baseUrl}/delegation/history/${address}`;
-          const params: string[] = [];
-          
-          if (startEpoch) {
-            params.push(`startEpoch=${startEpoch}`);
-          }
-          if (endEpoch) {
-            params.push(`endEpoch=${endEpoch}`);
-          }
-          
-          if (params.length > 0) {
-            url += `?${params.join('&')}`;
-          }
+					let url = `${credentials.baseUrl}/delegation/delegations/${address}`;
+					if (epoch) {
+						url += `?epoch=${epoch}`;
+					}
 
-          const options: any = {
-            method: 'GET',
-            url: url,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const options: any = {
+						method: 'GET',
+						url,
+						headers: {
+							'X-API-Key': credentials.apiKey,
+						},
+						json: true,
+					};
 
-        case 'estimateRewards': {
-          const amount = this.getNodeParameter('amount', i) as string;
-          const providers = this.getNodeParameter('providers', i) as string;
-          const duration = this.getNodeParameter('duration', i) as number;
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-          const body: any = {
-            amount,
-            providers: providers.split(',').map((p: string) => p.trim()),
-            duration,
-          };
+				case 'updateDelegation': {
+					const providers = this.getNodeParameter('providers', i) as string;
+					const percentages = this.getNodeParameter('percentages', i) as string;
+					const fromAddress = this.getNodeParameter('fromAddress', i) as string;
 
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/delegation/estimate-rewards`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: body,
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
+					const body = {
+						providers: providers.split(',').map((p: string) => p.trim()),
+						percentages: percentages.split(',').map((p: string) => parseInt(p.trim())),
+						fromAddress,
+					};
 
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
+					const options: any = {
+						method: 'PUT',
+						url: `${credentials.baseUrl}/delegation/delegations`,
+						headers: {
+							'Content-Type': 'application/json',
+							'X-API-Key': credentials.apiKey,
+						},
+						body,
+						json: true,
+					};
 
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
+					result = await this.helpers.httpRequest(options) as any;
+					break;
+				}
 
-  return returnData;
-}
-
-async function executeStateConnectorOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('flarenetworkApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      const baseUrl = credentials.baseUrl || 'https://flare-api.flare.network/v1';
-
-      switch (operation) {
-        case 'getAttestations': {
-          const roundId = this.getNodeParameter('roundId', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-          
-          let queryParams = '';
-          const params: string[] = [];
-          if (roundId) params.push(`roundId=${encodeURIComponent(roundId)}`);
-          if (status) params.push(`status=${encodeURIComponent(status)}`);
-          if (params.length > 0) queryParams = '?' + params.join('&');
-
-          const options: any = {
-            method: 'GET',
-            url: `${baseUrl}/state-connector/attestations${queryParams}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAttestationById': {
-          const attestationId = this.getNodeParameter('attestationId', i) as string;
-
-          const options: any = {
-            method: 'GET',
-            url: `${baseUrl}/state-connector/attestations/${attestationId}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'submitAttestation': {
-          const attestationType = this.getNodeParameter('attestationType', i) as string;
-          const sourceId = this.getNodeParameter('sourceId', i) as string;
-          const attestationData = this.getNodeParameter('attestationData', i) as any;
-
-          const options: any = {
-            method: 'POST',
-            url: `${baseUrl}/state-connector/attestations`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: {
-              attestationType,
-              sourceId,
-              data: attestationData,
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAttestationRounds': {
-          const roundId = this.getNodeParameter('roundId', i) as string;
-          
-          let queryParams = '';
-          if (roundId) queryParams = `?roundId=${encodeURIComponent(roundId)}`;
-
-          const options: any = {
-            method: 'GET',
-            url: `${baseUrl}/state-connector/rounds${queryParams}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAttestationProviders': {
-          const options: any = {
-            method: 'GET',
-            url: `${baseUrl}/state-connector/providers`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getSupportedTypes': {
-          const options: any = {
-            method: 'GET',
-            url: `${baseUrl}/state-connector/types`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({ json: result, pairedItem: { item: i } });
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({ 
-          json: { error: error.message }, 
-          pairedItem: { item: i } 
-        });
-      } else {
-        if (error.httpCode) {
-          throw new NodeApiError(this.getNode(), error);
-        }
-        throw new NodeOperationError(this.getNode(), error.message);
-      }
-    }
-  }
-
-  return returnData;
-}
-
-async function executeFAssetsOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('flarenetworkApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-      
-      switch (operation) {
-        case 'getFAssetAgents': {
-          const fAssetType = this.getNodeParameter('fAssetType', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-          
-          const queryParams: any = {};
-          if (fAssetType) queryParams.fAssetType = fAssetType;
-          if (status) queryParams.status = status;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/agents`,
-            qs: queryParams,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getAgentDetails': {
-          const address = this.getNodeParameter('address', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/agents/${address}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getMintingRequests': {
-          const status = this.getNodeParameter('status', i) as string;
-          const agent = this.getNodeParameter('agent', i) as string;
-          const user = this.getNodeParameter('user', i) as string;
-          
-          const queryParams: any = {};
-          if (status) queryParams.status = status;
-          if (agent) queryParams.agent = agent;
-          if (user) queryParams.user = user;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/minting`,
-            qs: queryParams,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'createMintingRequest': {
-          const amount = this.getNodeParameter('amount', i) as string;
-          const fAssetType = this.getNodeParameter('fAssetType', i) as string;
-          const agent = this.getNodeParameter('agent', i) as string;
-          const underlyingAddress = this.getNodeParameter('underlyingAddress', i) as string;
-          
-          const body: any = {
-            amount,
-            fAssetType,
-            agent,
-            underlyingAddress,
-          };
-          
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/fassets/minting`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getRedemptionRequests': {
-          const status = this.getNodeParameter('status', i) as string;
-          const user = this.getNodeParameter('user', i) as string;
-          
-          const queryParams: any = {};
-          if (status) queryParams.status = status;
-          if (user) queryParams.user = user;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/redemption`,
-            qs: queryParams,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'createRedemptionRequest': {
-          const amount = this.getNodeParameter('amount', i) as string;
-          const fAssetType = this.getNodeParameter('fAssetType', i) as string;
-          const underlyingAddress = this.getNodeParameter('underlyingAddress', i) as string;
-          
-          const body: any = {
-            amount,
-            fAssetType,
-            underlyingAddress,
-          };
-          
-          const options: any = {
-            method: 'POST',
-            url: `${credentials.baseUrl}/fassets/redemption`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            body,
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getCollateralInfo': {
-          const agent = this.getNodeParameter('agent', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/collateral/${agent}`,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        case 'getLiquidations': {
-          const agent = this.getNodeParameter('agent', i) as string;
-          const status = this.getNodeParameter('status', i) as string;
-          
-          const queryParams: any = {};
-          if (agent) queryParams.agent = agent;
-          if (status) queryParams.status = status;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/fassets/liquidations`,
-            qs: queryParams,
-            headers: {
-              'Authorization': `Bearer ${credentials.apiKey}`,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-        
-        default:
-          throw new NodeOperationError(
-            this.getNode(),
-            `The operation "${operation}" is not known!`,
-          );
-      }
-      
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-      
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
-  
-  return returnData;
-}
-
-async function executeNetworkInfoOperations(
-  this: IExecuteFunctions,
-  items: INodeExecutionData[],
-): Promise<INodeExecutionData[]> {
-  const returnData: INodeExecutionData[] = [];
-  const operation = this.getNodeParameter('operation', 0) as string;
-  const credentials = await this.getCredentials('flarenetworkApi') as any;
-
-  for (let i = 0; i < items.length; i++) {
-    try {
-      let result: any;
-
-      switch (operation) {
-        case 'getNetworkInfo': {
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/network/info`,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getBlocks': {
-          const blockNumber = this.getNodeParameter('blockNumber', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          
-          let url = `${credentials.baseUrl}/network/blocks`;
-          const queryParams: string[] = [];
-          
-          if (blockNumber) {
-            queryParams.push(`blockNumber=${encodeURIComponent(blockNumber)}`);
-          }
-          if (limit) {
-            queryParams.push(`limit=${limit}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += `?${queryParams.join('&')}`;
-          }
-
-          const options: any = {
-            method: 'GET',
-            url,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getBlockByHash': {
-          const blockHash = this.getNodeParameter('blockHash', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/network/blocks/${encodeURIComponent(blockHash)}`,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getTransactions': {
-          const address = this.getNodeParameter('address', i) as string;
-          const blockNumber = this.getNodeParameter('blockNumber', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          
-          let url = `${credentials.baseUrl}/network/transactions`;
-          const queryParams: string[] = [];
-          
-          if (address) {
-            queryParams.push(`address=${encodeURIComponent(address)}`);
-          }
-          if (blockNumber) {
-            queryParams.push(`blockNumber=${encodeURIComponent(blockNumber)}`);
-          }
-          if (limit) {
-            queryParams.push(`limit=${limit}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += `?${queryParams.join('&')}`;
-          }
-
-          const options: any = {
-            method: 'GET',
-            url,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getTransactionByHash': {
-          const txHash = this.getNodeParameter('txHash', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/network/transactions/${encodeURIComponent(txHash)}`,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAddressBalance': {
-          const address = this.getNodeParameter('address', i) as string;
-          
-          const options: any = {
-            method: 'GET',
-            url: `${credentials.baseUrl}/network/addresses/${encodeURIComponent(address)}/balance`,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        case 'getAddressTransactions': {
-          const address = this.getNodeParameter('address', i) as string;
-          const limit = this.getNodeParameter('limit', i) as number;
-          const offset = this.getNodeParameter('offset', i) as number;
-          
-          let url = `${credentials.baseUrl}/network/addresses/${encodeURIComponent(address)}/transactions`;
-          const queryParams: string[] = [];
-          
-          if (limit) {
-            queryParams.push(`limit=${limit}`);
-          }
-          if (offset) {
-            queryParams.push(`offset=${offset}`);
-          }
-          
-          if (queryParams.length > 0) {
-            url += `?${queryParams.join('&')}`;
-          }
-
-          const options: any = {
-            method: 'GET',
-            url,
-            headers: {
-              'X-API-Key': credentials.apiKey,
-              'Content-Type': 'application/json',
-            },
-            json: true,
-          };
-          result = await this.helpers.httpRequest(options) as any;
-          break;
-        }
-
-        default:
-          throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
-      }
-
-      returnData.push({
-        json: result,
-        pairedItem: { item: i },
-      });
-
-    } catch (error: any) {
-      if (this.continueOnFail()) {
-        returnData.push({
-          json: { error: error.message },
-          pairedItem: { item: i },
-        });
-      } else {
-        throw new NodeApiError(this.getNode(), error);
-      }
-    }
-  }
-
-  return returnData;
-}
+				case 'removeDelegation': {
+					const providers = this.getNodeParameter('providers', i) as string;
+					const fromAddress =
