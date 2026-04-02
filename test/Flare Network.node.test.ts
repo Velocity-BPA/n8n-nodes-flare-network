@@ -67,778 +67,827 @@ describe('FlareNetwork Node', () => {
   });
 
   // Resource-specific tests
-describe('FtsoPriceFeeds Resource', () => {
-  let mockExecuteFunctions: any;
+describe('FtsoDataFeed Resource', () => {
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://flare-api.flare.network/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://flare-api.flare.network',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  describe('getCurrentPrices', () => {
-    it('should get current prices successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: [
-          { symbol: 'FLR', price: 0.025, timestamp: 1640995200 },
-          { symbol: 'SGB', price: 0.012, timestamp: 1640995200 },
-        ],
-      };
+	describe('getCurrentPrices', () => {
+		it('should get current prices successfully', async () => {
+			const mockResponse = { data: [{ symbol: 'FLR', price: '0.05' }] };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getCurrentPrices')
+				.mockReturnValueOnce('FLR,SGB')
+				.mockReturnValueOnce(0);
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getCurrentPrices';
-          case 'symbols': return 'FLR,SGB';
-          case 'timestamp': return 0;
-          default: return undefined;
-        }
-      });
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'GET',
+				url: 'https://flare-api.flare.network/ftso/prices/current?symbols=FLR%2CSGB',
+				headers: {
+					'Authorization': 'Bearer test-key',
+					'Content-Type': 'application/json',
+				},
+				json: true,
+			});
+		});
 
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+		it('should handle getCurrentPrices error', async () => {
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getCurrentPrices')
+				.mockReturnValueOnce('')
+				.mockReturnValueOnce(0);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://flare-api.flare.network/v1/ftso/prices/current?symbols=FLR%2CSGB',
-        headers: {
-          'X-API-Key': 'test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
-    });
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-    it('should handle error in getCurrentPrices', async () => {
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getCurrentPrices';
-          case 'symbols': return '';
-          case 'timestamp': return 0;
-          default: return undefined;
-        }
-      });
+			expect(result).toEqual([{ json: { error: 'API Error' }, pairedItem: { item: 0 } }]);
+		});
+	});
 
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+	describe('getHistoricalPrices', () => {
+		it('should get historical prices successfully', async () => {
+			const mockResponse = { data: [{ symbol: 'FLR', price: '0.05', epoch: 100 }] };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getHistoricalPrices')
+				.mockReturnValueOnce('FLR')
+				.mockReturnValueOnce(100)
+				.mockReturnValueOnce(200)
+				.mockReturnValueOnce(50);
 
-      await expect(
-        executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }])
-      ).rejects.toThrow('API Error');
-    });
-  });
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-  describe('getPriceBySymbol', () => {
-    it('should get price by symbol successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: { symbol: 'FLR', price: 0.025, timestamp: 1640995200 },
-      };
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getPriceBySymbol';
-          case 'symbol': return 'FLR';
-          default: return undefined;
-        }
-      });
+	describe('getPriceBySymbol', () => {
+		it('should get price by symbol successfully', async () => {
+			const mockResponse = { symbol: 'FLR', price: '0.05' };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getPriceBySymbol')
+				.mockReturnValueOnce('FLR');
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
+	describe('getDataProviders', () => {
+		it('should get data providers successfully', async () => {
+			const mockResponse = { data: [{ address: '0x123', name: 'Provider1' }] };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getDataProviders')
+				.mockReturnValueOnce(true)
+				.mockReturnValueOnce('votePower');
 
-  describe('getPriceHistory', () => {
-    it('should get price history successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: [
-          { timestamp: 1640995200, price: 0.025 },
-          { timestamp: 1640998800, price: 0.026 },
-        ],
-      };
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getPriceHistory';
-          case 'symbol': return 'FLR';
-          case 'startTime': return 1640995200;
-          case 'endTime': return 1641081600;
-          case 'interval': return '1h';
-          default: return undefined;
-        }
-      });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+	describe('getDataProvider', () => {
+		it('should get specific data provider successfully', async () => {
+			const mockResponse = { address: '0x123', name: 'Provider1', votePower: '1000' };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getDataProvider')
+				.mockReturnValueOnce('0x123');
 
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-  describe('getFtsoProviders', () => {
-    it('should get FTSO providers successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: [
-          { address: '0x123...', name: 'Provider 1', active: true },
-          { address: '0x456...', name: 'Provider 2', active: true },
-        ],
-      };
+	describe('getCurrentEpoch', () => {
+		it('should get current epoch successfully', async () => {
+			const mockResponse = { epochId: 1000, startTime: 1234567890 };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getCurrentEpoch');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getFtsoProviders';
-          default: return undefined;
-        }
-      });
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
+	describe('getEpochData', () => {
+		it('should get epoch data successfully', async () => {
+			const mockResponse = { epochId: 100, prices: [{ symbol: 'FLR', price: '0.05' }] };
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getEpochData')
+				.mockReturnValueOnce(100);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
+			const result = await executeFtsoDataFeedOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-  describe('getProviderPrices', () => {
-    it('should get provider prices successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: [
-          { symbol: 'FLR', price: 0.025, timestamp: 1640995200 },
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getProviderPrices';
-          case 'address': return '0x123456789...';
-          case 'symbol': return 'FLR';
-          default: return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
-
-  describe('getFtsoRewards', () => {
-    it('should get FTSO rewards successfully', async () => {
-      const mockResponse = {
-        success: true,
-        data: [
-          { epoch: 100, provider: '0x123...', reward: '1000000000000000000' },
-        ],
-      };
-
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getFtsoRewards';
-          case 'rewardEpoch': return 100;
-          case 'provider': return '';
-          default: return undefined;
-        }
-      });
-
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-      const result = await executeFtsoPriceFeedsOperations.call(mockExecuteFunctions, [{ json: {} }]);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-    });
-  });
+			expect(result).toEqual([{ json: mockResponse, pairedItem: { item: 0 } }]);
+		});
+	});
 });
 
 describe('Delegation Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://flare-api.flare.network/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('getDelegatorInfo should return delegation info', async () => {
-    const mockResponse = {
-      address: '0x123...',
-      totalDelegated: '1000000',
-      providers: ['0xabc...', '0xdef...'],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getDelegatorInfo';
-      if (param === 'address') return '0x123...';
-      return '';
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeDelegationOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/delegation/delegators/0x123...',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
-
-  test('getDelegationProviders should return providers list', async () => {
-    const mockResponse = {
-      providers: [
-        { address: '0xabc...', name: 'Provider 1', votePower: '5000000' },
-        { address: '0xdef...', name: 'Provider 2', votePower: '3000000' },
-      ],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getDelegationProviders';
-      return '';
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeDelegationOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-  });
-
-  test('estimateRewards should calculate potential rewards', async () => {
-    const mockResponse = {
-      estimatedRewards: '150.5',
-      duration: 30,
-      providers: ['0xabc...', '0xdef...'],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'estimateRewards';
-      if (param === 'amount') return '10000';
-      if (param === 'providers') return '0xabc..., 0xdef...';
-      if (param === 'duration') return 30;
-      return '';
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeDelegationOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://flare-api.flare.network/v1/delegation/estimate-rewards',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        amount: '10000',
-        providers: ['0xabc...', '0xdef...'],
-        duration: 30,
-      },
-      json: true,
-    });
-  });
-
-  test('should handle API errors gracefully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getDelegatorInfo';
-      if (param === 'address') return 'invalid-address';
-      return '';
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
-      new Error('Invalid address format')
-    );
-
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-
-    const result = await executeDelegationOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json.error).toBe('Invalid address format');
-  });
-
-  test('getDelegationHistory should include query parameters', async () => {
-    const mockResponse = {
-      history: [
-        { epoch: 100, provider: '0xabc...', amount: '1000' },
-        { epoch: 101, provider: '0xdef...', amount: '2000' },
-      ],
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      if (param === 'operation') return 'getDelegationHistory';
-      if (param === 'address') return '0x123...';
-      if (param === 'startEpoch') return 100;
-      if (param === 'endEpoch') return 110;
-      return '';
-    });
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeDelegationOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/delegation/history/0x123...?startEpoch=100&endEpoch=110',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
-});
-
-describe('StateConnector Resource', () => {
-  let mockExecuteFunctions: any;
-
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://flare-api.flare.network/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
-
-  test('should get attestations successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestations';
-        case 'roundId': return '12345';
-        case 'status': return 'confirmed';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      attestations: [
-        { id: '1', roundId: '12345', status: 'confirmed' },
-        { id: '2', roundId: '12345', status: 'confirmed' }
-      ]
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/state-connector/attestations?roundId=12345&status=confirmed',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
-  });
-
-  test('should get attestation by ID successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestationById';
-        case 'attestationId': return 'att_12345';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      id: 'att_12345',
-      roundId: '12345',
-      status: 'confirmed',
-      details: { sourceId: 'source_1' }
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-  });
-
-  test('should submit attestation successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'submitAttestation';
-        case 'attestationType': return 'payment';
-        case 'sourceId': return 'source_123';
-        case 'attestationData': return { amount: '1000', recipient: '0x123' };
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      id: 'att_new_123',
-      status: 'pending',
-      submittedAt: '2024-01-01T00:00:00Z'
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'POST',
-      url: 'https://flare-api.flare.network/v1/state-connector/attestations',
-      headers: {
-        'Authorization': 'Bearer test-api-key',
-        'Content-Type': 'application/json',
-      },
-      body: {
-        attestationType: 'payment',
-        sourceId: 'source_123',
-        data: { amount: '1000', recipient: '0x123' }
-      },
-      json: true,
-    });
-  });
-
-  test('should get attestation rounds successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestationRounds';
-        case 'roundId': return '12345';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      rounds: [
-        { id: '12345', startTime: '2024-01-01T00:00:00Z', endTime: '2024-01-01T01:00:00Z' }
-      ]
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-  });
-
-  test('should get attestation providers successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestationProviders';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      providers: [
-        { id: 'provider_1', name: 'Provider 1', status: 'active' },
-        { id: 'provider_2', name: 'Provider 2', status: 'active' }
-      ]
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-  });
-
-  test('should get supported types successfully', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getSupportedTypes';
-        default: return '';
-      }
-    });
-
-    const mockResponse = {
-      types: ['payment', 'balance', 'transaction_confirmation']
-    };
-
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual(mockResponse);
-  });
-
-  test('should handle API errors properly', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestations';
-        default: return '';
-      }
-    });
-
-    const mockError = new Error('API Error');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-    await expect(
-      executeStateConnectorOperations.call(mockExecuteFunctions, [{ json: {} }])
-    ).rejects.toThrow('API Error');
-  });
-
-  test('should continue on fail when configured', async () => {
-    mockExecuteFunctions.continueOnFail.mockReturnValue(true);
-    mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-      switch (param) {
-        case 'operation': return 'getAttestations';
-        default: return '';
-      }
-    });
-
-    const mockError = new Error('API Error');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(mockError);
-
-    const result = await executeStateConnectorOperations.call(
-      mockExecuteFunctions,
-      [{ json: {} }]
-    );
-
-    expect(result).toHaveLength(1);
-    expect(result[0].json).toEqual({ error: 'API Error' });
-  });
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://flare-api.flare.network',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+			},
+		};
+	});
+
+	test('should create delegation successfully', async () => {
+		const mockResponse = { success: true, transactionHash: '0x123' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('createDelegation')
+			.mockReturnValueOnce('0x456,0x789')
+			.mockReturnValueOnce('50,50')
+			.mockReturnValueOnce('0xabc');
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should get delegations successfully', async () => {
+		const mockResponse = { delegations: [{ provider: '0x456', percentage: 50 }] };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getDelegations')
+			.mockReturnValueOnce('0xabc')
+			.mockReturnValueOnce(123);
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should update delegation successfully', async () => {
+		const mockResponse = { success: true, transactionHash: '0x456' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('updateDelegation')
+			.mockReturnValueOnce('0x456')
+			.mockReturnValueOnce('100')
+			.mockReturnValueOnce('0xabc');
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should remove delegation successfully', async () => {
+		const mockResponse = { success: true, transactionHash: '0x789' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('removeDelegation')
+			.mockReturnValueOnce('0x456')
+			.mockReturnValueOnce('0xabc');
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should get delegation rewards successfully', async () => {
+		const mockResponse = { rewards: [{ epoch: 123, amount: '1000' }] };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getDelegationRewards')
+			.mockReturnValueOnce('0xabc')
+			.mockReturnValueOnce(120)
+			.mockReturnValueOnce(125);
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should get vote power successfully', async () => {
+		const mockResponse = { votePower: '5000', epoch: 123 };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getVotePower')
+			.mockReturnValueOnce('0xabc')
+			.mockReturnValueOnce(123);
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should claim rewards successfully', async () => {
+		const mockResponse = { success: true, transactionHash: '0xdef', amount: '2500' };
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('claimRewards')
+			.mockReturnValueOnce('0xabc')
+			.mockReturnValueOnce('120,121,122');
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: mockResponse,
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should handle API errors gracefully', async () => {
+		const error = new Error('API Error');
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(error);
+		mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('createDelegation');
+
+		const result = await executeDelegationOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toEqual([
+			{
+				json: { error: 'API Error' },
+				pairedItem: { item: 0 },
+			},
+		]);
+	});
+
+	test('should throw error for unknown operation', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('unknownOperation');
+
+		await expect(
+			executeDelegationOperations.call(mockExecuteFunctions, [{ json: {} }])
+		).rejects.toThrow('Unknown operation: unknownOperation');
+	});
 });
 
 describe('FAssets Resource', () => {
-  let mockExecuteFunctions: any;
+	let mockExecuteFunctions: any;
 
-  beforeEach(() => {
-    mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://flare-api.flare.network/v1',
-      }),
-      getInputData: jest.fn().mockReturnValue([{ json: {} }]),
-      getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
-      continueOnFail: jest.fn().mockReturnValue(false),
-      helpers: {
-        httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
-      },
-    };
-  });
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://flare-api.flare.network',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
 
-  describe('getFAssetAgents', () => {
-    it('should get F-Asset agents successfully', async () => {
-      const mockResponse = {
-        agents: [
-          { address: '0x123', status: 'active', fAssetType: 'FBTC' },
-        ],
-      };
+	describe('mintFAsset operation', () => {
+		it('should mint FAsset successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('mintFAsset')
+				.mockReturnValueOnce('FBTC')
+				.mockReturnValueOnce('1000000')
+				.mockReturnValueOnce('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getFAssetAgents';
-          case 'fAssetType': return 'FBTC';
-          case 'status': return 'active';
-          default: return '';
-        }
-      });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				transactionHash: '0x123',
+				status: 'pending',
+			});
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      const result = await executeFAssetsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }],
-      );
+			expect(result).toHaveLength(1);
+			expect(result[0].json.transactionHash).toBe('0x123');
+			expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
+				method: 'POST',
+				url: 'https://flare-api.flare.network/fassets/mint',
+				headers: {
+					'Authorization': 'Bearer test-key',
+					'Content-Type': 'application/json',
+				},
+				body: {
+					assetType: 'FBTC',
+					amount: '1000000',
+					underlyingAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+				},
+				json: true,
+			});
+		});
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://flare-api.flare.network/v1/fassets/agents',
-        qs: { fAssetType: 'FBTC', status: 'active' },
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
-    });
+		it('should handle mint FAsset error', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('mintFAsset')
+				.mockReturnValueOnce('FBTC')
+				.mockReturnValueOnce('1000000')
+				.mockReturnValueOnce('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
 
-    it('should handle API errors', async () => {
-      mockExecuteFunctions.getNodeParameter.mockReturnValue('getFAssetAgents');
-      mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+			mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(
+				new Error('Insufficient collateral'),
+			);
+			mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-      await expect(
-        executeFAssetsOperations.call(mockExecuteFunctions, [{ json: {} }]),
-      ).rejects.toThrow();
-    });
-  });
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-  describe('createMintingRequest', () => {
-    it('should create minting request successfully', async () => {
-      const mockResponse = {
-        requestId: 'mint-123',
-        status: 'pending',
-      };
+			expect(result).toHaveLength(1);
+			expect(result[0].json.error).toBe('Insufficient collateral');
+		});
+	});
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'createMintingRequest';
-          case 'amount': return '1000';
-          case 'fAssetType': return 'FBTC';
-          case 'agent': return '0x456';
-          case 'underlyingAddress': return '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
-          default: return '';
-        }
-      });
+	describe('redeemFAsset operation', () => {
+		it('should redeem FAsset successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('redeemFAsset')
+				.mockReturnValueOnce('FBTC')
+				.mockReturnValueOnce('500000')
+				.mockReturnValueOnce('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				transactionHash: '0x456',
+				status: 'confirmed',
+			});
 
-      const result = await executeFAssetsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }],
-      );
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://flare-api.flare.network/v1/fassets/minting',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        body: {
-          amount: '1000',
-          fAssetType: 'FBTC',
-          agent: '0x456',
-          underlyingAddress: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
-        },
-        json: true,
-      });
-    });
-  });
+			expect(result).toHaveLength(1);
+			expect(result[0].json.transactionHash).toBe('0x456');
+		});
+	});
 
-  describe('getCollateralInfo', () => {
-    it('should get collateral info successfully', async () => {
-      const mockResponse = {
-        agent: '0x789',
-        collateralRatio: '150%',
-        totalCollateral: '5000',
-      };
+	describe('getFAssetPositions operation', () => {
+		it('should get FAsset positions successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getFAssetPositions')
+				.mockReturnValueOnce('0x1234567890123456789012345678901234567890')
+				.mockReturnValueOnce('FBTC');
 
-      mockExecuteFunctions.getNodeParameter.mockImplementation((param: string) => {
-        switch (param) {
-          case 'operation': return 'getCollateralInfo';
-          case 'agent': return '0x789';
-          default: return '';
-        }
-      });
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				positions: [
+					{
+						assetType: 'FBTC',
+						balance: '1000000',
+						collateralRatio: '150%',
+					},
+				],
+			});
 
-      mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
 
-      const result = await executeFAssetsOperations.call(
-        mockExecuteFunctions,
-        [{ json: {} }],
-      );
+			expect(result).toHaveLength(1);
+			expect(result[0].json.positions).toHaveLength(1);
+		});
+	});
 
-      expect(result).toHaveLength(1);
-      expect(result[0].json).toEqual(mockResponse);
-      expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://flare-api.flare.network/v1/fassets/collateral/0x789',
-        headers: {
-          'Authorization': 'Bearer test-api-key',
-          'Content-Type': 'application/json',
-        },
-        json: true,
-      });
-    });
-  });
+	describe('getFAssetAgents operation', () => {
+		it('should get FAsset agents successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getFAssetAgents')
+				.mockReturnValueOnce('FBTC')
+				.mockReturnValueOnce(true);
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				agents: [
+					{
+						address: '0xagent1',
+						collateralRatio: '200%',
+						status: 'active',
+					},
+				],
+			});
+
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.agents).toHaveLength(1);
+		});
+	});
+
+	describe('getFAssetAgent operation', () => {
+		it('should get specific FAsset agent successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getFAssetAgent')
+				.mockReturnValueOnce('0xagent123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				address: '0xagent123',
+				collateralRatio: '180%',
+				status: 'active',
+				totalCollateral: '5000000',
+			});
+
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.address).toBe('0xagent123');
+		});
+	});
+
+	describe('liquidateFAsset operation', () => {
+		it('should liquidate FAsset successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('liquidateFAsset')
+				.mockReturnValueOnce('0xagent123')
+				.mockReturnValueOnce('100000');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				transactionHash: '0x789',
+				liquidatedAmount: '100000',
+			});
+
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.liquidatedAmount).toBe('100000');
+		});
+	});
+
+	describe('getCollateralRatio operation', () => {
+		it('should get collateral ratio successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getCollateralRatio')
+				.mockReturnValueOnce('0xagent123');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				agentAddress: '0xagent123',
+				collateralRatio: '165%',
+				minRatio: '150%',
+			});
+
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.collateralRatio).toBe('165%');
+		});
+	});
+
+	describe('getUnderlyingBalance operation', () => {
+		it('should get underlying balance successfully', async () => {
+			mockExecuteFunctions.getNodeParameter
+				.mockReturnValueOnce('getUnderlyingBalance')
+				.mockReturnValueOnce('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa')
+				.mockReturnValueOnce('FBTC');
+
+			mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+				address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+				balance: '2500000',
+				assetType: 'FBTC',
+			});
+
+			const result = await executeFAssetsOperations.call(
+				mockExecuteFunctions,
+				[{ json: {} }],
+			);
+
+			expect(result).toHaveLength(1);
+			expect(result[0].json.balance).toBe('2500000');
+		});
+	});
+});
+
+describe('StateConnector Resource', () => {
+	let mockExecuteFunctions: any;
+
+	beforeEach(() => {
+		mockExecuteFunctions = {
+			getNodeParameter: jest.fn(),
+			getCredentials: jest.fn().mockResolvedValue({
+				apiKey: 'test-key',
+				baseUrl: 'https://flare-api.flare.network',
+			}),
+			getInputData: jest.fn().mockReturnValue([{ json: {} }]),
+			getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
+			continueOnFail: jest.fn().mockReturnValue(false),
+			helpers: {
+				httpRequest: jest.fn(),
+				requestWithAuthentication: jest.fn(),
+			},
+		};
+	});
+
+	it('should create attestation successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('createAttestation')
+			.mockReturnValueOnce('PaymentVerification')
+			.mockReturnValueOnce('ethereum')
+			.mockReturnValueOnce({ transactionHash: '0x123' });
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			attestationId: 'att123',
+			status: 'pending',
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.attestationId).toBe('att123');
+		expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith(
+			expect.objectContaining({
+				method: 'POST',
+				url: 'https://flare-api.flare.network/state-connector/attestations',
+			})
+		);
+	});
+
+	it('should get attestation successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getAttestation')
+			.mockReturnValueOnce('att123');
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			attestationId: 'att123',
+			status: 'confirmed',
+			data: {},
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.attestationId).toBe('att123');
+	});
+
+	it('should get attestations list successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getAttestations')
+			.mockReturnValueOnce('ethereum')
+			.mockReturnValueOnce('PaymentVerification')
+			.mockReturnValueOnce('confirmed')
+			.mockReturnValueOnce(10);
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			attestations: [{ attestationId: 'att123' }],
+			total: 1,
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.attestations).toHaveLength(1);
+	});
+
+	it('should get attestation proof successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getAttestationProof')
+			.mockReturnValueOnce('att123');
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			proof: ['0x123', '0x456'],
+			merkleRoot: '0xabc',
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.proof).toBeDefined();
+		expect(result[0].json.merkleRoot).toBe('0xabc');
+	});
+
+	it('should verify proof successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('verifyProof')
+			.mockReturnValueOnce(['0x123', '0x456'])
+			.mockReturnValueOnce('0xabc')
+			.mockReturnValueOnce({ transactionHash: '0x789' });
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			valid: true,
+			verified: true,
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.valid).toBe(true);
+	});
+
+	it('should get current round successfully', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getCurrentRound');
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			roundId: 12345,
+			startTime: 1640995200,
+			endTime: 1640995260,
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.roundId).toBe(12345);
+	});
+
+	it('should get round data successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getRoundData')
+			.mockReturnValueOnce(12345);
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			roundId: 12345,
+			attestations: [],
+			merkleRoot: '0xdef',
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.roundId).toBe(12345);
+	});
+
+	it('should get attestation sources successfully', async () => {
+		mockExecuteFunctions.getNodeParameter
+			.mockReturnValueOnce('getAttestationSources')
+			.mockReturnValueOnce(true);
+		
+		mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+			sources: [
+				{ id: 'ethereum', name: 'Ethereum', active: true },
+				{ id: 'bitcoin', name: 'Bitcoin', active: true },
+			],
+		});
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.sources).toHaveLength(2);
+	});
+
+	it('should handle API errors gracefully', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('getCurrentRound');
+		mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+		mockExecuteFunctions.continueOnFail.mockReturnValue(true);
+
+		const result = await executeStateConnectorOperations.call(
+			mockExecuteFunctions,
+			[{ json: {} }]
+		);
+
+		expect(result).toHaveLength(1);
+		expect(result[0].json.error).toBe('API Error');
+	});
+
+	it('should throw error for unknown operation', async () => {
+		mockExecuteFunctions.getNodeParameter.mockReturnValueOnce('unknownOperation');
+
+		await expect(
+			executeStateConnectorOperations.call(mockExecuteFunctions, [{ json: {} }])
+		).rejects.toThrow('Unknown operation: unknownOperation');
+	});
 });
 
 describe('NetworkInfo Resource', () => {
@@ -848,178 +897,152 @@ describe('NetworkInfo Resource', () => {
     mockExecuteFunctions = {
       getNodeParameter: jest.fn(),
       getCredentials: jest.fn().mockResolvedValue({
-        apiKey: 'test-api-key',
-        baseUrl: 'https://flare-api.flare.network/v1',
+        apiKey: 'test-key',
+        baseUrl: 'https://flare-api.flare.network'
       }),
       getInputData: jest.fn().mockReturnValue([{ json: {} }]),
       getNode: jest.fn().mockReturnValue({ name: 'Test Node' }),
       continueOnFail: jest.fn().mockReturnValue(false),
       helpers: {
         httpRequest: jest.fn(),
-        requestWithAuthentication: jest.fn(),
+        requestWithAuthentication: jest.fn()
       },
     };
   });
 
-  it('should get network info successfully', async () => {
-    const mockResponse = { 
-      chainId: 14, 
-      blockHeight: 1000000, 
-      networkName: 'Flare' 
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'getNetworkInfo';
-      return null;
+  it('should get network status successfully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getNetworkStatus');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      status: 'healthy',
+      blockHeight: 12345,
+      peers: 50
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    const items = [{ json: {} }];
-    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([{
-      json: mockResponse,
-      pairedItem: { item: 0 },
-    }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/network/info',
-      headers: {
-        'X-API-Key': 'test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
+    expect(result).toHaveLength(1);
+    expect(result[0].json).toEqual({
+      status: 'healthy',
+      blockHeight: 12345,
+      peers: 50
     });
   });
 
-  it('should get blocks with parameters', async () => {
-    const mockResponse = { 
-      blocks: [{ number: 100, hash: '0xabc123' }] 
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'getBlocks';
-      if (paramName === 'blockNumber') return '100';
-      if (paramName === 'limit') return 5;
-      return null;
+  it('should get latest block successfully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getLatestBlock');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      number: 12345,
+      hash: '0xabc123',
+      timestamp: 1640995200
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    const items = [{ json: {} }];
-    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([{
-      json: mockResponse,
-      pairedItem: { item: 0 },
-    }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/network/blocks?blockNumber=100&limit=5',
-      headers: {
-        'X-API-Key': 'test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0].json.number).toBe(12345);
   });
 
-  it('should get block by hash', async () => {
-    const mockResponse = { 
-      number: 100, 
-      hash: '0xabc123', 
-      transactions: [] 
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'getBlockByHash';
-      if (paramName === 'blockHash') return '0xabc123';
-      return null;
+  it('should get specific block successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getBlock')
+      .mockReturnValueOnce(12000);
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      number: 12000,
+      hash: '0xdef456',
+      transactions: []
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    const items = [{ json: {} }];
-    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([{
-      json: mockResponse,
-      pairedItem: { item: 0 },
-    }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/network/blocks/0xabc123',
-      headers: {
-        'X-API-Key': 'test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0].json.number).toBe(12000);
   });
 
-  it('should get address balance', async () => {
-    const mockResponse = { 
-      address: '0x123456789',
-      balance: '1000000000000000000' 
-    };
-
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'getAddressBalance';
-      if (paramName === 'address') return '0x123456789';
-      return null;
+  it('should get transaction successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getTransaction')
+      .mockReturnValueOnce('0xabc123def456');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      hash: '0xabc123def456',
+      status: 'confirmed',
+      value: '1000000000000000000'
     });
 
-    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue(mockResponse);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    const items = [{ json: {} }];
-    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, items);
-
-    expect(result).toEqual([{
-      json: mockResponse,
-      pairedItem: { item: 0 },
-    }]);
-    expect(mockExecuteFunctions.helpers.httpRequest).toHaveBeenCalledWith({
-      method: 'GET',
-      url: 'https://flare-api.flare.network/v1/network/addresses/0x123456789/balance',
-      headers: {
-        'X-API-Key': 'test-api-key',
-        'Content-Type': 'application/json',
-      },
-      json: true,
-    });
+    expect(result).toHaveLength(1);
+    expect(result[0].json.hash).toBe('0xabc123def456');
   });
 
-  it('should handle API errors correctly', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'getNetworkInfo';
-      return null;
+  it('should get account successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getAccount')
+      .mockReturnValueOnce('0x1234567890123456789012345678901234567890');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      address: '0x1234567890123456789012345678901234567890',
+      balance: '5000000000000000000',
+      nonce: 42
     });
 
-    const apiError = new Error('API Error');
-    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(apiError);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].json.address).toBe('0x1234567890123456789012345678901234567890');
+  });
+
+  it('should get validators successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getValidators')
+      .mockReturnValueOnce(true)
+      .mockReturnValueOnce('stake');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      validators: [
+        { address: '0xvalidator1', stake: '1000000', active: true },
+        { address: '0xvalidator2', stake: '2000000', active: true }
+      ]
+    });
+
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].json.validators).toHaveLength(2);
+  });
+
+  it('should get specific validator successfully', async () => {
+    mockExecuteFunctions.getNodeParameter
+      .mockReturnValueOnce('getValidator')
+      .mockReturnValueOnce('0xvalidator123');
+    mockExecuteFunctions.helpers.httpRequest.mockResolvedValue({
+      address: '0xvalidator123',
+      stake: '1500000',
+      performance: 0.98,
+      active: true
+    });
+
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].json.address).toBe('0xvalidator123');
+  });
+
+  it('should handle API errors gracefully', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getNetworkStatus');
+    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
     mockExecuteFunctions.continueOnFail.mockReturnValue(true);
 
-    const items = [{ json: {} }];
-    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, items);
+    const result = await executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]);
 
-    expect(result).toEqual([{
-      json: { error: 'API Error' },
-      pairedItem: { item: 0 },
-    }]);
+    expect(result).toHaveLength(1);
+    expect(result[0].json.error).toBe('API Error');
   });
 
-  it('should throw error for unknown operation', async () => {
-    mockExecuteFunctions.getNodeParameter.mockImplementation((paramName: string, itemIndex: number) => {
-      if (paramName === 'operation') return 'unknownOperation';
-      return null;
-    });
+  it('should throw error when continueOnFail is false', async () => {
+    mockExecuteFunctions.getNodeParameter.mockReturnValue('getNetworkStatus');
+    mockExecuteFunctions.helpers.httpRequest.mockRejectedValue(new Error('API Error'));
+    mockExecuteFunctions.continueOnFail.mockReturnValue(false);
 
-    const items = [{ json: {} }];
-
-    await expect(executeNetworkInfoOperations.call(mockExecuteFunctions, items))
-      .rejects
-      .toThrow('Unknown operation: unknownOperation');
+    await expect(executeNetworkInfoOperations.call(mockExecuteFunctions, [{ json: {} }]))
+      .rejects.toThrow('API Error');
   });
 });
 });
