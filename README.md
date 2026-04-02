@@ -8,25 +8,25 @@
 >
 > For licensing information, visit https://velobpa.com/licensing or contact licensing@velobpa.com.
 
-This n8n community node provides comprehensive integration with the Flare Network blockchain, implementing 5 core resources including FTSO Price Feeds, Delegation, State Connector, F-Assets, and Network Information. It enables seamless access to Flare's time-series oracle data, delegation management, cross-chain attestations, and wrapped asset operations within n8n workflows.
+This n8n community node provides comprehensive integration with the Flare Network blockchain ecosystem. It includes 5 resources covering FTSO price feeds, delegation management, F-Assets operations, State Connector data verification, and network information retrieval, enabling developers to build robust blockchain automation workflows.
 
 ![n8n Community Node](https://img.shields.io/badge/n8n-Community%20Node-blue)
 ![License](https://img.shields.io/badge/license-BSL--1.1-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
-![Flare Network](https://img.shields.io/badge/Flare-Network-orange)
-![FTSO](https://img.shields.io/badge/FTSO-Oracle-green)
-![DeFi](https://img.shields.io/badge/DeFi-Ready-purple)
+![Flare Network](https://img.shields.io/badge/Flare-Network-red)
+![Blockchain](https://img.shields.io/badge/Blockchain-Integration-orange)
+![DeFi](https://img.shields.io/badge/DeFi-Ready-green)
 
 ## Features
 
-- **FTSO Price Feeds** - Access real-time and historical price data from Flare's decentralized oracle system
-- **Delegation Management** - Automate FTSO data provider delegation and reward claiming operations
-- **State Connector** - Query cross-chain attestations and verify external blockchain data
-- **F-Assets Integration** - Manage wrapped Bitcoin and other cross-chain assets on Flare
-- **Network Monitoring** - Track network statistics, validator information, and chain health metrics
-- **Real-time Updates** - Subscribe to live price feeds and network events
-- **Multi-chain Support** - Works with both Flare and Songbird networks
-- **Comprehensive API Coverage** - Full access to Flare's RPC and API endpoints
+- **FTSO Data Feeds** - Access real-time price feeds and historical data from Flare's decentralized oracle network
+- **Delegation Management** - Automate vote power delegation and rewards claiming for network participation
+- **F-Assets Integration** - Bridge non-smart contract tokens and manage collateral operations
+- **State Connector** - Verify external blockchain data and submit attestation requests
+- **Network Monitoring** - Retrieve comprehensive network statistics, validator information, and epoch data
+- **Multi-Network Support** - Compatible with Flare mainnet, Songbird canary network, and testnets
+- **Real-time Updates** - Subscribe to live blockchain events and price feed updates
+- **Error Resilience** - Built-in retry mechanisms and comprehensive error handling
 
 ## Installation
 
@@ -61,115 +61,101 @@ n8n start
 
 | Field | Description | Required |
 |-------|-------------|----------|
-| API Key | Flare Network API key for enhanced rate limits | No |
+| API Key | Flare Network API key for enhanced rate limits | Yes |
 | Network | Target network (mainnet, testnet, songbird) | Yes |
-| RPC Endpoint | Custom RPC endpoint URL (optional) | No |
-| Timeout | Request timeout in milliseconds (default: 30000) | No |
+| Base URL | Custom RPC endpoint URL (optional) | No |
+| Timeout | Request timeout in milliseconds | No |
 
 ## Resources & Operations
 
-### 1. FTSO Price Feeds
+### 1. FtsoDataFeed
 
 | Operation | Description |
 |-----------|-------------|
-| Get Current Prices | Retrieve current price data for specified symbols |
-| Get Historical Prices | Query historical price data with time range filters |
-| Get Price History | Fetch detailed price history for technical analysis |
-| List Supported Symbols | Get all available price feed symbols |
-| Get Price Statistics | Calculate price statistics and volatility metrics |
-| Subscribe to Price Updates | Real-time price feed subscriptions |
+| Get Price | Retrieve current price for a specific symbol |
+| Get Price History | Fetch historical price data with time range |
+| List Symbols | Get all available price feed symbols |
+| Get Price Feeds | Retrieve multiple price feeds in a single request |
+| Get Epoch Data | Access FTSO epoch information and statistics |
 
 ### 2. Delegation
 
 | Operation | Description |
 |-----------|-------------|
-| Delegate Votes | Delegate voting power to FTSO data providers |
-| Undelegate Votes | Remove delegation from data providers |
-| Get Delegation Info | Query current delegation status and allocations |
-| Claim Rewards | Claim accumulated FTSO rewards |
-| Get Reward History | Retrieve historical reward distributions |
-| Get Provider Rankings | List FTSO data provider performance rankings |
+| Delegate Votes | Delegate vote power to FTSO data providers |
+| Get Delegations | Retrieve current delegation information |
+| Claim Rewards | Claim accumulated delegation rewards |
+| Get Rewards | Query available rewards and history |
+| Undelegate | Remove or modify existing delegations |
 
-### 3. State Connector
-
-| Operation | Description |
-|-----------|-------------|
-| Submit Attestation | Submit attestation requests for cross-chain verification |
-| Get Attestation Status | Check the status of submitted attestations |
-| Query Attestation Proofs | Retrieve cryptographic proofs for verified attestations |
-| List Attestation Types | Get supported attestation type definitions |
-| Get Round Information | Query State Connector round data and timing |
-| Verify Merkle Proof | Validate attestation Merkle proofs |
-
-### 4. F-Assets
+### 3. FAssets
 
 | Operation | Description |
 |-----------|-------------|
-| Mint F-Assets | Mint wrapped assets by locking underlying tokens |
-| Redeem F-Assets | Redeem F-Assets for underlying blockchain assets |
-| Get Asset Info | Query F-Asset contract information and parameters |
-| Check Collateral Ratio | Monitor collateral ratios for minting positions |
-| Get Minting History | Retrieve historical minting and redemption data |
-| List Available Assets | Get all supported F-Asset types and their contracts |
+| Mint FAssets | Create new F-Asset tokens by locking collateral |
+| Redeem FAssets | Burn F-Assets to unlock underlying assets |
+| Get Collateral | Retrieve collateral information and ratios |
+| List Agents | Get available F-Asset agents and their status |
+| Get Asset Info | Fetch F-Asset details and configuration |
 
-### 5. Network Info
+### 4. StateConnector
 
 | Operation | Description |
 |-----------|-------------|
-| Get Network Status | Retrieve current network health and statistics |
-| Get Block Information | Query specific block data and transactions |
-| Get Validator Set | List active validators and their stake information |
-| Get Network Parameters | Fetch network configuration and governance parameters |
-| Get Transaction Status | Check transaction confirmation status |
-| Monitor Network Events | Subscribe to network-level event notifications |
+| Submit Attestation | Submit data attestation request |
+| Get Attestation | Retrieve attestation result and proof |
+| Verify Proof | Validate attestation proofs |
+| List Attesters | Get active attestation providers |
+| Get Round Info | Access State Connector round information |
+
+### 5. NetworkInfo
+
+| Operation | Description |
+|-----------|-------------|
+| Get Block Info | Retrieve blockchain block information |
+| Get Validators | Fetch validator list and statistics |
+| Get Network Stats | Access comprehensive network metrics |
+| Get Epoch Info | Retrieve current epoch and timing data |
+| Get Gas Prices | Get current gas price recommendations |
 
 ## Usage Examples
 
 ```javascript
-// Get current FLR/USD price from FTSO
+// Get current FLR/USD price
 {
-  "resource": "ftsoPriceFeeds",
-  "operation": "getCurrentPrices",
-  "symbols": ["FLR", "BTC", "ETH"],
-  "includeMetadata": true
+  "symbol": "FLR",
+  "currency": "USD"
 }
 ```
 
 ```javascript
-// Delegate votes to top FTSO providers
+// Delegate vote power to FTSO providers
 {
-  "resource": "delegation",
-  "operation": "delegateVotes",
-  "providers": [
-    {"address": "0x1234...5678", "percentage": 50},
-    {"address": "0x9876...5432", "percentage": 50}
-  ],
-  "walletAddress": "0xabcd...efgh"
+  "providers": ["0x1234...", "0x5678..."],
+  "percentages": [50, 50],
+  "delegatorAddress": "0xabcd..."
 }
 ```
 
 ```javascript
-// Submit Bitcoin payment attestation
+// Mint F-Assets with collateral
 {
-  "resource": "stateConnector",
-  "operation": "submitAttestation",
-  "attestationType": "Payment",
-  "sourceChain": "BTC",
-  "transactionHash": "a1b2c3d4e5f6...",
-  "amount": "100000000",
-  "recipient": "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
-}
-```
-
-```javascript
-// Mint FBTC using Bitcoin collateral
-{
-  "resource": "fAssets",
-  "operation": "mintFAssets",
   "assetSymbol": "FBTC",
-  "amount": "0.5",
-  "collateralRatio": "200",
-  "agentAddress": "0x1234567890abcdef..."
+  "amount": "0.1",
+  "collateralAmount": "1000",
+  "agentAddress": "0xdef0..."
+}
+```
+
+```javascript
+// Submit State Connector attestation
+{
+  "attestationType": "Payment",
+  "sourceId": "BTC",
+  "requestData": {
+    "transactionId": "abc123...",
+    "blockNumber": 750000
+  }
 }
 ```
 
@@ -177,12 +163,12 @@ n8n start
 
 | Error | Description | Solution |
 |-------|-------------|----------|
-| Invalid API Key | Authentication failed with provided credentials | Verify API key and network configuration |
-| Rate Limit Exceeded | Too many requests within time window | Implement request throttling or upgrade API plan |
-| Network Unavailable | Target blockchain network is unreachable | Check network status and RPC endpoint availability |
-| Insufficient Balance | Wallet lacks funds for transaction | Ensure sufficient token balance for operations |
-| Invalid Attestation | State Connector attestation validation failed | Verify attestation data format and source chain status |
-| Contract Error | Smart contract execution reverted | Check contract parameters and blockchain state |
+| Invalid API Key | Authentication failed with provided credentials | Verify API key is correct and active |
+| Network Timeout | Request exceeded timeout limit | Check network connectivity and increase timeout |
+| Insufficient Balance | Not enough tokens for transaction | Ensure wallet has sufficient balance and gas |
+| Invalid Symbol | Price feed symbol not found | Use List Symbols operation to get valid symbols |
+| Epoch Not Active | FTSO epoch is not currently active | Wait for next epoch or check epoch timing |
+| Attestation Failed | State Connector attestation was rejected | Verify attestation data format and requirements |
 
 ## Development
 
@@ -228,4 +214,4 @@ Contributions are welcome! Please ensure:
 
 - **Issues**: [GitHub Issues](https://github.com/Velocity-BPA/n8n-nodes-flare-network/issues)
 - **Flare Documentation**: [docs.flare.network](https://docs.flare.network)
-- **Flare Discord**: [Flare Network Community](https://discord.gg/flare-network)
+- **Developer Portal**: [dev.flare.network](https://dev.flare.network)
